@@ -1,0 +1,40 @@
+package com.Food.models;
+
+
+import com.Food.dto.ResturantDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.Order;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long Id;
+    private String fullname;
+    private String email;
+    private String password;
+    private USER_ROLE role;
+
+    @JsonIgnore// beacause during use fetch we dont want to get orders list
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "customer")//we are mapping custoemr to lsut and telling spring not to make seperate table for this
+    private List<Order> orders=new ArrayList<>();
+    @ElementCollection// we used this to integrate anpther entity
+    private List<ResturantDto> favourites;
+
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true)// cascade refers to delete all the users whenevre we delete the user all the adresses will be deleted
+    private List<Address> adresses=new ArrayList<>();
+
+
+
+}
