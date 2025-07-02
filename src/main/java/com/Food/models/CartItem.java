@@ -7,27 +7,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class IngredientsItem {
+@NoArgsConstructor
+@Entity
+public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public Long id;
-
-    private String name;
+    private Long id;
 
     @ManyToOne
-    private IngredientsCategory ingredientsCategory;
-
     @JsonIgnore
+    private Cart cart;
+
     @ManyToOne
-    private Resturant resturant;
+    private Food food;
 
-    private boolean inStock=true;
+    private int quantity;
 
+    private List<String> ingredients=new ArrayList<>();
 
-
+    private Long totalPrice;
 }

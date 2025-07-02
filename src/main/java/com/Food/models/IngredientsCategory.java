@@ -7,27 +7,23 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class IngredientsItem {
-
+@NoArgsConstructor
+public class IngredientsCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public Long id;
+    private long id;
 
     private String name;
-
-    @ManyToOne
-    private IngredientsCategory ingredientsCategory;
-
     @JsonIgnore
     @ManyToOne
     private Resturant resturant;
 
-    private boolean inStock=true;
-
-
-
+    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL)
+    private List<IngredientsItem> ingredients=new ArrayList<>();
 }
