@@ -29,10 +29,10 @@ public class AppConfig {
                          .requestMatchers("/api/admin/**").hasAnyRole("RESTURANT_OWNER","ADMIN")
                          .requestMatchers("/api/**").authenticated()
                          .anyRequest().permitAll()
-                 ).addFilter(new JwtTokenValidator())//remoced basicauthentiction filter.class because of error
+                 ).addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)//remoced basicauthentiction filter.class because of error
                  .csrf(csrf ->csrf.disable())
                  .cors(cors ->cors.configurationSource(corsConfigurationSource()));
-         return  null;
+         return http.build();
       }
 
     private CorsConfigurationSource corsConfigurationSource() {

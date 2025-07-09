@@ -49,7 +49,7 @@ public class Resturant {
     private boolean open;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "resturant",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "resturant",cascade = CascadeType.ALL)
     private List<Food> foods =new ArrayList<>();
 
 
