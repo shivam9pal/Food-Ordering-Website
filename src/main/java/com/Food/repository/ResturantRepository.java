@@ -6,13 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface ResturantRepository extends JpaRepository<Resturant,Long> {
+public interface ResturantRepository extends JpaRepository<Resturant,Long   > {
 
 
-    @Query("SELECT r FROM RESTURANT r WHERE lower(r.name) LIKE lower(concat('%',:query,'%'))"+"" +
+    @Query("SELECT r FROM Resturant r WHERE lower(r.name) LIKE lower(concat('%',:query,'%'))"+
             "OR lower(r.cuisineType) LIKE lower(concat('%',:query,'%'))")
     List<Resturant> findBySearchQuery(String query);
-    Resturant findByOwnerId(Long id);
+    Resturant findByOwnerId(Long userId);
 
 
 }

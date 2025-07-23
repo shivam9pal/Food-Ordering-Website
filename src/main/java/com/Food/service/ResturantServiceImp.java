@@ -6,13 +6,14 @@ import com.Food.models.Resturant;
 import com.Food.models.User;
 import com.Food.repository.AddressRepository;
 import com.Food.repository.ResturantRepository;
+import com.Food.repository.UserRepository;
 import com.Food.request.CreateResturantRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -26,6 +27,9 @@ public class ResturantServiceImp implements ResturantService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public Resturant createResturant(CreateResturantRequest req, User user) {
@@ -46,46 +50,78 @@ public class ResturantServiceImp implements ResturantService {
     }
 
     @Override
-    public Resturant updateResturant(Long ResturantId, CreateResturantRequest createResturantRequest) throws Exception {
-        Resturant resturant=fundResturantById(ResturantId);
+    public Resturant updateResturant(Long ResturantId, CreateResturantRequest updatedResturant) throws Exception {
+        Resturant resturant= findResturantById(ResturantId);
         if(resturant.getCuisineType()!=null){
-            resturant.setCuisineType(upda);
+            resturant.setCuisineType(updatedResturant.getCuisineType());
         }
-        return null;
+        if(resturant.getDescription()!=null){
+            resturant.setDescription(updatedResturant.getDescription());
+        }
+        if(resturant.getName()!=null){
+            resturant.setName(updatedResturant.getName());
+        }
+        return resturantRepository.save(resturant);
     }
 
     @Override
-    public void deleteResturant(Long ResturantId) throws Exception {
-
+    public void deleteResturant(Long resturantId) throws Exception {
+        Resturant resturant=findResturantById(resturantId);
+        resturantRepository.delete(resturant);
     }
 
     @Override
     public List<Resturant> getAllResturant() {
-        return List.of();
+        return resturantRepository.findAll();
     }
 
     @Override
-    public List<Resturant> searchResturant() {
-        return List.of();
+    public List<Resturant> searchResturant(String keyword) {
+        return resturantRepository.findBySearchQuery(keyword);
     }
 
     @Override
-    public Resturant fundResturantById(Long id) throws Exception {
-        return null;
+    public Resturant findResturantById(Long id) throws Exception {
+        Optional<Resturant> opt=resturantRepository.findById(id);
+        if(opt.isEmpty()){
+            throw new Exception(" Resturant not find By Id"+id);
+        }
+        return opt.get();
     }
 
     @Override
-    public Resturant getResturantByUserId(Long UserId) throws Exception {
-        return null;
+    public Resturant getResturantByUserId(Long userId) throws Exception {
+        Resturant resturant=resturantRepository.findByOwnerId(userId);
+        if(resturant==null){
+            throw new Exception("Resturant nit find By user ID"+ userId);
+        }
+        return resturant;
     }
 
     @Override
     public ResturantDto addFavourites(Long resturantId, User user) throws Exception {
-        return null;
+
+        Resturant resturant= findResturantById(resturantId);
+        ResturantDto dto=new ResturantDto();
+        dto.setDescription(resturant.getDescription());
+        dto.setImages(resturant.getImages());
+        dto.setTitle(resturant.getName());
+        dto.setId(resturantId);
+
+        if(user.getFavourites().contains(dto)){
+            user.getFavourites().remove(dto);
+        }else{
+            user.getFavourites().add(dto);
+        }
+        userRepository.save(user);
+        return dto;
     }
 
     @Override
     public Resturant updateResturantStatus(Long id) throws Exception {
-        return null;
+
+        Resturant resturant=findResturantById(id);
+        resturant.setOpen(!resturant.isOpen());
+        return resturantRepository.save(resturant);
     }
 }

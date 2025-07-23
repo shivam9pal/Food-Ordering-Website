@@ -13,17 +13,17 @@ public interface ResturantService {
     public Resturant createResturant(CreateResturantRequest req, User user);
 
 
-    public Resturant updateResturant(Long ResturantId, CreateResturantRequest createResturantRequest) throws Exception;
+    public Resturant updateResturant(Long ResturantId, CreateResturantRequest updatedResturant) throws Exception;
 
     public void deleteResturant (Long ResturantId) throws Exception;
 
     public List<Resturant> getAllResturant();
 
-    public List<Resturant> searchResturant();
+    public List<Resturant> searchResturant(String keyword);
 
-    public Resturant fundResturantById(Long id) throws Exception;
+    public Resturant findResturantById(Long id) throws Exception;
 
-    public Resturant getResturantByUserId(Long UserId) throws Exception;
+    public Resturant getResturantByUserId(Long userId) throws Exception;
 
     public ResturantDto addFavourites(Long resturantId,User user) throws Exception;
 
