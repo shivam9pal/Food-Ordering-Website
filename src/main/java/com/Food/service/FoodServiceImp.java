@@ -17,7 +17,8 @@ public class FoodServiceImp implements FoodService{
 
     @Autowired
     private FoodRepository foodRepository;
-    @Autowired
+    //@Autowired
+
 
 
     @Override

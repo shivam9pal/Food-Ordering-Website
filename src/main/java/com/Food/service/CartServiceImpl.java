@@ -6,7 +6,6 @@ import com.Food.models.Food;
 import com.Food.models.User;
 import com.Food.repository.CartItemRepository;
 import com.Food.repository.CartRepository;
-import com.Food.repository.FoodRepository;
 import com.Food.request.AddCartItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,15 +95,17 @@ public class CartServiceImpl implements CartService
     }
 
     @Override
-    public Cart findCartByUserId(String jwt) throws Exception {
-        User user=userService.findUserByJwtToken(jwt);
-        return cartRepository.findByCustomerId(user.getId());
+    public Cart findCartByUserId(Long userId) throws Exception {
+        //User user=userService.findUserByJwtToken(jwt);
+        Cart cart=cartRepository.findByCustomerId(userId);
+        cart.setTotal(calculateCartTotal(cart));
+        return cart;
     }
 
     @Override
-    public Cart clearCart(String jwt) throws Exception {
-        User user=userService.findUserByJwtToken(jwt);
-        Cart cart=findCartById(user.getId());
+    public Cart clearCart(Long userId) throws Exception {
+        //User user=userService.findUserByJwtToken(jwt);
+        Cart cart=findCartById(userId);
         cart.getItem().clear();
         return cartRepository.save(cart);
     }
