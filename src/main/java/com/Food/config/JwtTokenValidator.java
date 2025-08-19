@@ -25,27 +25,46 @@ public class JwtTokenValidator extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String jwt=request.getHeader(JwtConstant.JWT_HEADER);
-        if(jwt!=null){
-            jwt=jwt.substring(7);// token comes with Bearer written first so we need to extract token by making it to substring
 
-            try{
-                SecretKey key= Keys.hmacShaKeyFor(JwtConstant.JWT_HEADER.getBytes());
-                Claims claims= Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJwt(jwt).getBody();
+        String path = request.getServletPath();
+        // Skip validation for public endpoints
+        if (path.startsWith("/auth/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                String email=String.valueOf(claims.get("email"));
-                String authorities=String.valueOf(claims.get("authorities"));
-// here we are getting roles in string format we need tp convert them in into granted authority
+        String jwt = request.getHeader(JwtConstant.JWT_HEADER);
 
-                List<GrantedAuthority> auth= AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
+        if (jwt != null && jwt.startsWith("Bearer ")) {
+            jwt = jwt.substring(7); // remove "Bearer "
 
-                Authentication authentication=new UsernamePasswordAuthenticationToken(email,null,auth);
+            try {
+                SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());
+
+                Claims claims = Jwts.parserBuilder()
+                        .setSigningKey(key)
+                        .build()
+                        .parseClaimsJws(jwt)
+                        .getBody();
+
+                String email = String.valueOf(claims.get("email"));
+                String authorities = String.valueOf(claims.get("authorities"));
+
+                List<GrantedAuthority> auth =
+                        AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
+
+                Authentication authentication =
+                        new UsernamePasswordAuthenticationToken(email, null, auth);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }catch(Exception e){
+
+            } catch (Exception e) {
                 throw new BadCredentialsException("Invalid Token");
             }
         }
 
+        // Always call filterChain so request can continue
+        filterChain.doFilter(request, response);
     }
+
 }

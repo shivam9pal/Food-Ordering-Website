@@ -42,65 +42,66 @@ public class AuthController {
     @Autowired
     private CartRepository cartRepository;
 
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
-        User isEmailExist=userRepository.findByEmail(user.getEmail());
-        if(isEmailExist!=null){
+        // Check if email is already used
+        if (userRepository.findByEmail(user.getEmail()) != null) {
             throw new Exception("Email already used in another account");
         }
-        User createdUser=new User();
-        createdUser.setEmail(user.getEmail());
-        createdUser.setFullname(user.getFullname());
-        createdUser.setRole(user.getRole());
-        createdUser.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        User savedUser=userRepository.save(createdUser);
+        // Create a new User object to ensure the ID is not set
+        User newUser = new User();
+        newUser.setFullname(user.getFullname());
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setRole(user.getRole());
 
-        Cart cart=new Cart();
+//
+        // Save the new user, allowing Hibernate to generate the ID
+        User savedUser = userRepository.save(newUser);
+
+        // Create cart for user
+        Cart cart = new Cart();
         cart.setCustomer(savedUser);
         cartRepository.save(cart);
 
+        // Properly authenticate using CustomerUserDetailsService
+        Authentication authentication = authenticate(user.getEmail(), user.getPassword());
 
-        Authentication authentication=new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        // Generate JWT
+        String jwt = jwtProvider.generateToken(authentication);
 
-        String jwt= jwtProvider.generateToken(authentication);
-
-        AuthResponse authResponse=new AuthResponse();
+        AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Register Success");
         authResponse.setRole(savedUser.getRole());
 
-
-         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
-
+        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
-    @PostMapping("signin")
-    public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest req){
+    @PostMapping("/signin")
+    public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest req) {
+        Authentication authentication = authenticate(req.getEmail(), req.getPassword());
 
-        String username= req.getEmail();;
-        String password= req.getPqassword();
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String role = authorities.isEmpty() ? null : authorities.iterator().next().getAuthority();
 
-        Authentication authentication=authenticate(username,password);
-        Collection<? extends GrantedAuthority> authorities=authentication.getAuthorities();
-        String role=authorities.isEmpty()?null:authorities.iterator().next().getAuthority();
+        String jwt = jwtProvider.generateToken(authentication);
 
-        String jwt= jwtProvider.generateToken(authentication);
-
-        AuthResponse authResponse=new AuthResponse();
+        AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Login Success");
         authResponse.setRole(USER_ROLE.valueOf(role));
 
-        return new ResponseEntity<>(authResponse,HttpStatus.OK);
+        return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 
     private Authentication authenticate(String username, String password) {
-        UserDetails userDetails=customerUserDetailsService.loadUserByUsername(username);
-        if(userDetails==null) throw new BadCredentialsException("Invalid Username");
-        if(!passwordEncoder.matches(password,userDetails.getPassword())) throw new BadCredentialsException("Invalid PAssword");
+        UserDetails userDetails = customerUserDetailsService.loadUserByUsername(username);
+        if (userDetails == null) throw new BadCredentialsException("Invalid Username");
+        if (!passwordEncoder.matches(password, userDetails.getPassword()))
+            throw new BadCredentialsException("Invalid Password");
 
-        return new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }
