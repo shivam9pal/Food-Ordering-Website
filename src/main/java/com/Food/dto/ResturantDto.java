@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 @Embeddable// used when we want to insert into another entity
 public class ResturantDto {
+
     @Id
     private Long id;
     private String title;

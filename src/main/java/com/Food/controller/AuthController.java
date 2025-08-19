@@ -49,12 +49,19 @@ public class AuthController {
             throw new Exception("Email already used in another account");
         }
 
-        // Create a new User object to ensure the ID is not set
+         //Create a new User object to ensure the ID is not set
         User newUser = new User();
         newUser.setFullname(user.getFullname());
         newUser.setEmail(user.getEmail());
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setRole(user.getRole());
+
+//        User newUser = new User();
+//        newUser.setId(Long.valueOf("1"));
+//        newUser.setFullname("Ag");
+//        newUser.setEmail("ag@gmail.com");
+//        newUser.setPassword(passwordEncoder.encode("agag"));
+//        newUser.setRole(USER_ROLE.valueOf("ROLE_CUSTOMER"));
 
 //
         // Save the new user, allowing Hibernate to generate the ID
