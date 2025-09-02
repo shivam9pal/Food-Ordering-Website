@@ -25,7 +25,7 @@ public class UserServiceImp implements UserService {
     @Override
     public User findUserByEmail(String email) throws Exception {
         User user=userRepository.findByEmail(email);
-        if(user==null) throw new Exception("USer not found");
+        if(user==null) throw new Exception("User not found");
 
         return user;
     }

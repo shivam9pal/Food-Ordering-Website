@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class IngredientsCategory {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     private String name;

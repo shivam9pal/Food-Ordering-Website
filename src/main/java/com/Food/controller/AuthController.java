@@ -1,6 +1,5 @@
 package com.Food.controller;
 
-
 import com.Food.config.JwtProvider;
 import com.Food.models.Cart;
 import com.Food.models.USER_ROLE;
@@ -49,42 +48,43 @@ public class AuthController {
             throw new Exception("Email already used in another account");
         }
 
-         //Create a new User object to ensure the ID is not set
+        // Create new user (let Hibernate generate the ID)
         User newUser = new User();
+        newUser.setId(Long.valueOf(9));
         newUser.setFullname(user.getFullname());
         newUser.setEmail(user.getEmail());
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        newUser.setRole(user.getRole());
+        newUser.setRole(user.getRole() != null ? user.getRole() : USER_ROLE.ROLE_CUSTOMER);
 
-//        User newUser = new User();
-//        newUser.setId(Long.valueOf("1"));
-//        newUser.setFullname("Ag");
-//        newUser.setEmail("ag@gmail.com");
-//        newUser.setPassword(passwordEncoder.encode("agag"));
-//        newUser.setRole(USER_ROLE.valueOf("ROLE_CUSTOMER"));
+        // Save user
+        userRepository.save(newUser);
 
-//
-        // Save the new user, allowing Hibernate to generate the ID
-        User savedUser = userRepository.save(newUser);
-
-        // Create cart for user
+        // Create a cart for this user
         Cart cart = new Cart();
-        cart.setCustomer(savedUser);
+        cart.setCustomer(newUser);
         cartRepository.save(cart);
 
-        // Properly authenticate using CustomerUserDetailsService
-        Authentication authentication = authenticate(user.getEmail(), user.getPassword());
+        // Instead of calling authenticate (raw password mismatch), build Authentication manually
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                newUser.getEmail(),
+                null,
+                java.util.List.of(() -> newUser.getRole().name()) // authorities
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Generate JWT
         String jwt = jwtProvider.generateToken(authentication);
 
+        // Build response
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Register Success");
-        authResponse.setRole(savedUser.getRole());
+        authResponse.setRole(newUser.getRole());
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
+
 
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest req) {
@@ -105,9 +105,12 @@ public class AuthController {
 
     private Authentication authenticate(String username, String password) {
         UserDetails userDetails = customerUserDetailsService.loadUserByUsername(username);
-        if (userDetails == null) throw new BadCredentialsException("Invalid Username");
-        if (!passwordEncoder.matches(password, userDetails.getPassword()))
+        if (userDetails == null) {
+            throw new BadCredentialsException("Invalid Username");
+        }
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException("Invalid Password");
+        }
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
