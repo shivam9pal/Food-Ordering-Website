@@ -54,13 +54,13 @@ public class ResturantController {
         return new ResponseEntity<>(resturant, HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/add-favorite")
-    public ResponseEntity<ResturantDto> addToFavorites(
-            @RequestHeader("Authorization") String jwt,
-            @PathVariable Long id
-    ) throws Exception {
-        User user=userService.findUserByJwtToken(jwt);
-        ResturantDto resturant=resturantService.addFavourites(id,user);
-        return new ResponseEntity<>(resturant, HttpStatus.OK);
-    }
+//    @PutMapping("/{id}/add-favorite")
+//    public ResponseEntity<ResturantDto> addToFavorites(
+//            @RequestHeader("Authorization") String jwt,
+//            @PathVariable Long id
+//    ) throws Exception {
+//        User user=userService.findUserByJwtToken(jwt);
+//        ResturantDto resturant=resturantService.addFavourites(id,user);
+//        return new ResponseEntity<>(resturant, HttpStatus.OK);
+//    }
 }

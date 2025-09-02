@@ -17,9 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 public class User {
 
-    @Column(name = "id")
+
     @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "fullname", nullable = false)
@@ -32,7 +32,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-//    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private USER_ROLE role = USER_ROLE.ROLE_CUSTOMER; // Set default value
 
@@ -40,9 +40,9 @@ public class User {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "customer", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "user_favourites", joinColumns = @JoinColumn(name = "user_id"))
-    private List<ResturantDto> favourites = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UserFavourites> favourites = new ArrayList<>();
+
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // This creates a foreign key in the Address table

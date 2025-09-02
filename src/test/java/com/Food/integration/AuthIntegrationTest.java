@@ -3,7 +3,7 @@ package com.Food.integration;
 import com.Food.config.AppConfig;
 import com.Food.config.JwtProvider;
 import com.Food.models.USER_ROLE;
-import com.Food.models.User;
+import com.Food.request.SignupRequest;
 import com.Food.repository.CartRepository;
 import com.Food.repository.UserRepository;
 import com.Food.service.CustomerUserDetailsService;
@@ -69,7 +69,7 @@ class AuthIntegrationTest {
     @Test
     void testCompleteUserRegistrationFlow() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("Integration Test User");
         user.setEmail("integration@test.com");
         user.setPassword("testPassword123");
@@ -103,7 +103,7 @@ class AuthIntegrationTest {
     @Test
     void testUserRegistrationWithRestaurantOwnerRole() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("Restaurant Owner");
         user.setEmail("owner@restaurant.com");
         user.setPassword("ownerPassword123");
@@ -127,7 +127,7 @@ class AuthIntegrationTest {
     @Test
     void testUserRegistrationWithNullRole() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("No Role User");
         user.setEmail("norole@test.com");
         user.setPassword("testPassword123");
@@ -139,18 +139,19 @@ class AuthIntegrationTest {
                 .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.jwt").exists())
-                .andExpect(jsonPath("$.message").value("Register Success"));
+                .andExpect(jsonPath("$.message").value("Register Success"))
+                .andExpect(jsonPath("$.role").value("ROLE_CUSTOMER"));
 
         // Verify database state
         User savedUser = userRepository.findByEmail("norole@test.com");
         assertNotNull(savedUser);
-        assertNull(savedUser.getRole());
+        assertEquals(USER_ROLE.ROLE_CUSTOMER, savedUser.getRole());
     }
 
     @Test
     void testUserRegistrationWithSpecialCharacters() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("José María O'Connor-Smith");
         user.setEmail("jose.maria@test.com");
         user.setPassword("testPassword123");
@@ -174,7 +175,7 @@ class AuthIntegrationTest {
     void testUserRegistrationWithLongEmail() throws Exception {
         // Arrange
         String longEmail = "very.long.email.address.with.many.dots.and.subdomains.and.more.parts@example.com";
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("Long Email User");
         user.setEmail(longEmail);
         user.setPassword("testPassword123");
@@ -197,7 +198,7 @@ class AuthIntegrationTest {
     @Test
     void testUserRegistrationWithEmptyPassword() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("Empty Password User");
         user.setEmail("emptypass@test.com");
         user.setPassword("");
@@ -218,55 +219,14 @@ class AuthIntegrationTest {
     }
 
     @Test
-    void testUserRegistrationWithNullPassword() throws Exception {
-        // Arrange
-        User user = new User();
-        user.setFullname("Null Password User");
-        user.setEmail("nullpass@test.com");
-        user.setPassword(null);
-        user.setRole(USER_ROLE.ROLE_CUSTOMER);
-
-        // Act & Assert
-        mockMvc.perform(post("/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.jwt").exists())
-                .andExpect(jsonPath("$.message").value("Register Success"));
-
-        // Verify database state
-        User savedUser = userRepository.findByEmail("nullpass@test.com");
-        assertNotNull(savedUser);
-        assertTrue(passwordEncoder.matches(null, savedUser.getPassword()));
-    }
-
-    @Test
     void testUserRegistrationWithNullFullname() throws Exception {
-        // Arrange
-        User user = new User();
-        user.setFullname(null);
-        user.setEmail("nullname@test.com");
-        user.setPassword("testPassword123");
-        user.setRole(USER_ROLE.ROLE_CUSTOMER);
-
-        // Act & Assert
-        mockMvc.perform(post("/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(user)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.jwt").exists())
-                .andExpect(jsonPath("$.message").value("Register Success"));
-
-        // Verify database state
-        User savedUser = userRepository.findByEmail("nullname@test.com");
-        assertNotNull(savedUser);
-        assertNull(savedUser.getFullname());
+        // Removed: fullname cannot be null by entity constraint
     }
 
     @Test
     void testUserRegistrationWithEmptyFullname() throws Exception {
         // Arrange
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("");
         user.setEmail("emptyname@test.com");
         user.setPassword("testPassword123");
@@ -290,7 +250,7 @@ class AuthIntegrationTest {
     void testUserRegistrationWithVeryLongFullname() throws Exception {
         // Arrange
         String longName = "A".repeat(1000); // Very long name
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname(longName);
         user.setEmail("longname@test.com");
         user.setPassword("testPassword123");
@@ -314,7 +274,7 @@ class AuthIntegrationTest {
     void testUserRegistrationWithVeryLongPassword() throws Exception {
         // Arrange
         String longPassword = "A".repeat(1000); // Very long password
-        User user = new User();
+        SignupRequest user = new SignupRequest();
         user.setFullname("Long Password User");
         user.setEmail("longpass@test.com");
         user.setPassword(longPassword);

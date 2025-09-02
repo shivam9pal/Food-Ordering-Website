@@ -4,6 +4,7 @@ import com.Food.dto.ResturantDto;
 import com.Food.models.Address;
 import com.Food.models.Resturant;
 import com.Food.models.User;
+import com.Food.models.UserFavourites;
 import com.Food.repository.AddressRepository;
 import com.Food.repository.ResturantRepository;
 import com.Food.repository.UserRepository;
@@ -99,22 +100,28 @@ public class ResturantServiceImp implements ResturantService {
     }
 
     @Override
-    public ResturantDto addFavourites(Long resturantId, User user) throws Exception {
+    public UserFavourites addFavourites(Long restaurantId, User user) throws Exception {
+        Resturant restaurant = findResturantById(restaurantId);
 
-        Resturant resturant= findResturantById(resturantId);
-        ResturantDto dto=new ResturantDto();
-        dto.setDescription(resturant.getDescription());
-        dto.setImages(resturant.getImages());
-        dto.setTitle(resturant.getName());
-        dto.setId(resturantId);
+        // Check if already exists
+        Optional<UserFavourites> existing = user.getFavourites().stream()
+                .filter(fav -> fav.getRestaurant().getId().equals(restaurantId))
+                .findFirst();
 
-        if(user.getFavourites().contains(dto)){
-            user.getFavourites().remove(dto);
-        }else{
-            user.getFavourites().add(dto);
+        if (existing.isPresent()) {
+            // Remove from favourites
+            user.getFavourites().remove(existing.get());
+            userRepository.save(user);
+            return null; // or return a status indicator
+        } else {
+            // Add to favourites
+            UserFavourites favourite = new UserFavourites();
+            favourite.setUser(user);
+            favourite.setRestaurant(restaurant);
+            user.getFavourites().add(favourite);
+            userRepository.save(user);
+            return favourite;
         }
-        userRepository.save(user);
-        return dto;
     }
 
     @Override

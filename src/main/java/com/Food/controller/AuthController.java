@@ -7,8 +7,10 @@ import com.Food.models.User;
 import com.Food.repository.CartRepository;
 import com.Food.repository.UserRepository;
 import com.Food.request.LoginRequest;
+import com.Food.request.SignupRequest;
 import com.Food.response.AuthResponse;
 import com.Food.service.CustomerUserDetailsService;
+import com.Food.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,48 +42,40 @@ public class AuthController {
     private CustomerUserDetailsService customerUserDetailsService;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception {
-        // Check if email is already used
-        if (userRepository.findByEmail(user.getEmail()) != null) {
-            throw new Exception("Email already used in another account");
-        }
+    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest req) throws Exception {
+        User toCreate = new User();
+        toCreate.setFullname(req.getFullname());
+        toCreate.setEmail(req.getEmail());
+        toCreate.setPassword(req.getPassword());
+        toCreate.setRole(req.getRole() != null ? req.getRole() : USER_ROLE.ROLE_CUSTOMER);
 
-        // Create new user (let Hibernate generate the ID)
-        User newUser = new User();
-        newUser.setId(Long.valueOf(9));
-        newUser.setFullname(user.getFullname());
-        newUser.setEmail(user.getEmail());
-        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        newUser.setRole(user.getRole() != null ? user.getRole() : USER_ROLE.ROLE_CUSTOMER);
+        // create user (validates and encodes password)
+        User created = userService.createUser(toCreate);
 
-        // Save user
-        userRepository.save(newUser);
-
-        // Create a cart for this user
+        // create cart for the user
         Cart cart = new Cart();
-        cart.setCustomer(newUser);
+        cart.setCustomer(created);
         cartRepository.save(cart);
 
-        // Instead of calling authenticate (raw password mismatch), build Authentication manually
+        // authenticate context
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                newUser.getEmail(),
+                created.getEmail(),
                 null,
-                java.util.List.of(() -> newUser.getRole().name()) // authorities
+                java.util.List.of(() -> created.getRole().name())
         );
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Generate JWT
+        // issue JWT
         String jwt = jwtProvider.generateToken(authentication);
 
-        // Build response
         AuthResponse authResponse = new AuthResponse();
         authResponse.setJwt(jwt);
         authResponse.setMessage("Register Success");
-        authResponse.setRole(newUser.getRole());
-
+        authResponse.setRole(created.getRole());
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 

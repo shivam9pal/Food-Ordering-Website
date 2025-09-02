@@ -26,28 +26,12 @@ public class CustomerUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("Username not found with this email" + username);
         }
-        return new UserDetails() {
-            @Override
-            public Collection<? extends GrantedAuthority> getAuthorities() {
-                return List.of();
-            }
-
-            @Override
-            public String getPassword() {
-                return "";
-            }
-
-            @Override
-            public String getUsername() {
-                return "";
-            }
-        };
-//        USER_ROLE role = user.getRole();
-//        List<GrantedAuthority> authorities = new ArrayList<>();
-//        if (role == null) {
-//            role = USER_ROLE.ROLE_CUSTOMER;
-//        }
-//        authorities.add(new SimpleGrantedAuthority(role.toString()));
-//        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+        USER_ROLE role = user.getRole();
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (role == null) {
+            role = USER_ROLE.ROLE_CUSTOMER;
+        }
+        authorities.add(new SimpleGrantedAuthority(role.toString()));
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 }
