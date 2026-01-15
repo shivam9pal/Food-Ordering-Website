@@ -106,13 +106,7 @@ mvn test -Dsurefire.useFile=false
 run-tests.bat
 ```
 
-### Test Coverage
-- **Unit Tests**: AuthController, CustomerUserDetailsService, JwtProvider
-- **Integration Tests**: Complete signup flow with database operations
-- **Total Tests**: 25+ tests
-- **Pass Rate**: 100%
 
-For detailed testing information, see [TESTING.md](TESTING.md)
 
 ## 📁 Project Structure
 
@@ -133,16 +127,16 @@ Food-Ordering-Website/
 │   │       ├── application.properties   # App configuration
 │   │       └── application-test.properties
 │   └── test/
-│       └── java/
-│           └── com/
-│               └── Food/
-│                   ├── controller/      # Controller tests
-│                   ├── service/         # Service tests
-│                   └── integration/     # Integration tests
-├── pom.xml                              # Maven dependencies
-├── README.md                            # This file
-├── TESTING.md                           # Testing documentation
-└── run-tests.bat                        # Windows test script
+│       └── 
+│           
+│                
+│                         
+│                            
+│                        
+├── pom.xml                              
+├── README.md                            
+├── TESTING.md                           
+└── run-tests.bat                       
 ```
 
 ## 🔐 API Endpoints
@@ -203,44 +197,3 @@ The application uses the following main entities:
 - **Restaurant**: Restaurant details (coming soon)
 - **Food**: Food items (coming soon)
 - **Order**: Order information (coming soon)
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Code Style
-- Follow Java naming conventions
-- Write meaningful commit messages
-- Add tests for new functionality
-- Update documentation as needed
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👤 Author
-
-**Shivam Pal**
-- GitHub: [@shivam9pal](https://github.com/shivam9pal)
-
-## 🙏 Acknowledgments
-
-- Spring Boot team for the excellent framework
-- Spring Security for robust authentication
-- All contributors and supporters
-
-## 📞 Support
-
-For support, email or open an issue in the GitHub repository.
-
----
-
-**Note**: This project is currently in active development. Features and documentation will be updated regularly.
-
-**Last Updated**: January 2026
